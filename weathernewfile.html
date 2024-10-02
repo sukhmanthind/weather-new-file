@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <style>
+        
+        body {
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+            background: url('pio.jpg') no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: white;
+        }
+
+        .container {
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.5); 
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            width: 80%;
+            max-width: 900px;
+        }
+
+        
+        .search-bar {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .search-bar input {
+            padding: 10px;
+            border-radius: 20px;
+            border: none;
+            width: 300px;
+            font-size: 16px;
+        }
+
+        .search-bar button {
+            padding: 10px 20px;
+            margin-left: 10px;
+            border-radius: 20px;
+            border: none;
+            background-color: #007BFF;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .search-bar button:hover {
+            background-color: #0056b3;
+        }
+
+        
+        .weather-info {
+            background-color: rgba(255, 255, 255, 0.1); 
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .weather-info h2 {
+            margin-bottom: 10px;
+            font-size: 28px;
+            color: #FFF;
+        }
+
+        .weather-info p {
+            margin: 5px 0;
+            font-size: 18px;
+        }
+
+        
+        .additional-info {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+
+        .additional-info div {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 14px;
+            width: 30%;
+            text-align: center;
+        }
+
+        
+        .forecast {
+            margin-top: 20px;
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .forecast h2 {
+            margin-bottom: 20px;
+        }
+
+        .forecast-container {
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .forecast-container .forecast-item {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            width: 100px;
+            text-align: center;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                width: 95%;
+            }
+
+            .additional-info {
+                flex-direction: column;
+            }
+
+            .additional-info div {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+
+            .forecast-container {
+                flex-direction: column;
+            }
+
+            .forecast-container .forecast-item {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <div class="search-bar">
+            <input type="text" id="city-input" placeholder="Enter city name" />
+            <button id="fetch-weather">Search</button>
+        </div>
+
+        
+        <div class="weather-info" id="weather-info">
+            
+        </div>
+
+        
+        <div class="additional-info">
+            <div id="wind-speed"></div>
+            <div id="sunrise"></div>
+            <div id="sunset"></div>
+        </div>
+
+        
+        <div class="forecast">
+            <h2>7-Day Weather Forecast</h2>
+            <div class="forecast-container" id="forecast-container">
+                
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        document.getElementById('fetch-weather').addEventListener('click', function() {
+            const city = document.getElementById('city-input').value;
+            const data = null;
+
+            const xhr = new XMLHttpRequest();
+            xhr.withCredentials = true;
+
+            xhr.addEventListener('readystatechange', function () {
+                if (this.readyState === this.DONE) {
+                    const response = JSON.parse(this.responseText);
+                    if (response.error) {
+                        document.getElementById('weather-info').innerText = 'Error: ' + response.error.message;
+                    } else {
+                        
+                        document.getElementById('weather-info').innerHTML = `
+                            <h2>Weather in ${response.location.name}, ${response.location.country}</h2>
+                            <p>Date and Time: ${response.location.localtime}</p>
+                            <p>Temperature: ${response.current.temp_c} °C</p>
+                            <p>Feels Like: ${response.current.feelslike_c} °C</p>
+                            <p>Weather Conditions: ${response.current.condition.text}</p>
+                            <p>Humidity: ${response.current.humidity}%</p>
+                        `;
+
+                    
+                        document.getElementById('wind-speed').innerText = `Wind Speed: ${response.current.wind_kph} kph`;
+                        document.getElementById('sunrise').innerText = `Sunrise: 07:01 AM`; 
+                        document.getElementById('sunset').innerText = `Sunset: 07:22 PM`;   
+
+                        
+                        const forecastContainer = document.getElementById('forecast-container');
+                        forecastContainer.innerHTML = '';  
+                        response.forecast.forecastday.forEach(day => {
+                            forecastContainer.innerHTML += `
+                                <div class="forecast-item">
+                                    <p>${day.date}</p>
+                                    <img src="${day.day.condition.icon}" alt="weather icon" />
+                                    <p>Max Temp: ${day.day.maxtemp_c}°C</p>
+                                    <p>Min Temp: ${day.day.mintemp_c}°C</p>
+                                    <p>${day.day.condition.text}</p>
+                                </div>
+                            `;
+                        });
+                    }
+                }
+            });
+
+            const encodedCity = encodeURIComponent(city);
+            xhr.open('GET', `https://weatherapi-com.p.rapidapi.com/forecast.json?q=${encodedCity}&days=7`); 
+            xhr.setRequestHeader('x-rapidapi-key', '18a41b215dmsh889d3dcd628c9e4p1d9ac6jsn596ea0037b31');
+            xhr.setRequestHeader('x-rapidapi-host', 'weatherapi-com.p.rapidapi.com');
+
+            xhr.send(data);
+        });
+    </script>
+
+</body>
+</html>
+
